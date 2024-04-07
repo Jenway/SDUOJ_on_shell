@@ -14,6 +14,8 @@ class Authenticator:
         except FileNotFoundError:
             print("未找到用户数据文件，需要重新输入用户名和密码。")
             self.username, self.password  = UserInputHandler.get_user_credentials()
+            with open("user_data.json", "w") as f:
+                json.dump({"username": self.username, "password": self.password}, f)
 
     def get_sTicket(self,_content="service=https://service.sdu.edu.cn/tp_up/view?m=up"):
         '''
