@@ -19,8 +19,6 @@ class Authenticator:
 
     def get_sTicket(self,_content="service=https://service.sdu.edu.cn/tp_up/view?m=up"):
         '''
-        Return sTicket
-
         params: base_url(str), username(str), password (str)
         return: sTicket (str)
         '''

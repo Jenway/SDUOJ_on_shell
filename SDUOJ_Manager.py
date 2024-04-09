@@ -155,3 +155,14 @@ class SDUOJ_Manager:
             verify=False
         )
         return response.json()
+    # https://oj.qd.sdu.edu.cn/api/ps/answer_sheet/submissionInfo
+    # {psid: "71", gid: "0", pid: "1", submissionId: "7d71c5057403c8a"}
+
+    def getSubmissionInfo(self, problemSetId, gid, pid, submissionId):
+        response = self.request_post(
+            "https://oj.qd.sdu.edu.cn/api/ps/answer_sheet/submissionInfo",
+            cookies={"SESSION": self.sduoj_cookie},
+            json={"psid": problemSetId, "gid": gid, "pid": pid, "submissionId": submissionId},
+            verify=False
+        )
+        return response.json()["data"]["judgeScore"]
