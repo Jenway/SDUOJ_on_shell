@@ -1,5 +1,6 @@
 import json
 import os
+from urllib import response
 from Authenticator import Authenticator
 import httpx
 
@@ -100,16 +101,6 @@ class SDUOJ_Manager:
         )
         return response.json()
 
-    # 	https://oj.qd.sdu.edu.cn/api/contest/list?pageNow=1&pageSize=15&groupId=30
-    def searchContest(self, groupId, pageNow=1, pageSize=15):
-        # json {"pageNow":1,"pageSize":15,"groupId":"30"}
-        response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/contest/list",
-            cookies={"SESSION": self.sduoj_cookie},
-            json={"pageNow": pageNow, "pageSize": pageSize, "groupId": groupId},
-            verify=False
-        )
-        return response.json()
 
     # /api/ps/problem_set/search
     def searchProblemSet(self, groupId, tag, pageNow=1, pageSize=20):
@@ -166,3 +157,55 @@ class SDUOJ_Manager:
             verify=False
         )
         return response.json()["data"]["judgeScore"]
+    
+    # 	https://oj.qd.sdu.edu.cn/api/contest/list?pageNow=1&pageSize=15&groupId=30
+    def searchContest(self, groupId, pageNow=1, pageSize=15):
+        # json {"pageNow":1,"pageSize":15,"groupId":"30"}
+        response = self.request_get(
+            "https://oj.qd.sdu.edu.cn/api/contest/list",
+            cookies={"SESSION": self.sduoj_cookie},
+            params={"pageNow": pageNow, "pageSize": pageSize, "groupId": groupId},
+            verify=False
+        )
+        return response.json()
+    
+    def getContestList(self, contestId):
+        # https://oj.qd.sdu.edu.cn/api/contest/query?contestId=318
+        response = self.request_get(
+            "https://oj.qd.sdu.edu.cn/api/contest/query",
+            cookies={"SESSION": self.sduoj_cookie},
+            params={"contestId": contestId},
+            verify=False
+        )
+        return response.json()
+    
+    # https://oj.qd.sdu.edu.cn/api/contest/queryProblem?contestId=318&problemCode=1
+    def getContestProblem(self, contestId, problemCode):
+        response = self.request_get(
+            "https://oj.qd.sdu.edu.cn/api/contest/queryProblem",
+            cookies={"SESSION": self.sduoj_cookie},
+            params={"contestId": contestId, "problemCode": problemCode},
+            verify=False
+        )
+        return response.json()
+    
+    # https://oj.qd.sdu.edu.cn/api/contest/createSubmission
+    def createContestSubmission(self, code, problemCode, contestId, judgeTemplateId):
+        # {"judgeTemplateId":"6","code":"","problemCode":"1","contestId":"318"}
+        response = self.request_post(
+            "https://oj.qd.sdu.edu.cn/api/contest/createSubmission",
+            cookies={"SESSION": self.sduoj_cookie},
+            json={"judgeTemplateId": judgeTemplateId, "code": code, "problemCode": problemCode, "contestId": contestId},
+            verify=False
+        )
+        return response.json()
+    
+    # https://oj.qd.sdu.edu.cn/api/contest/querySubmission?contestId=318&submissionId=7d96654970032be
+    def getContestSubmission(self, contestId, submissionId):
+        response = self.request_get(
+            "https://oj.qd.sdu.edu.cn/api/contest/querySubmission",
+            cookies={"SESSION": self.sduoj_cookie},
+            params={"contestId": contestId, "submissionId": submissionId},
+            verify=False
+        )
+        return response.json()
