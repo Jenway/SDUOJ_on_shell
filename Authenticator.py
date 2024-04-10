@@ -1,28 +1,19 @@
-from UserInputHandler import UserInputHandler
+from utils.UserInputHandler import Uhandler
 import httpx
-import json
 
 class AuthenticationError(Exception):
     pass
 
 class Authenticator:
     def __init__(self):
-        try:
-            with open("user_data.json", "r") as f:
-                user_data = json.load(f)
-                self.username, self.password  = user_data["username"], user_data["password"]
-        except FileNotFoundError:
-            print("未找到用户数据文件，需要重新输入用户名和密码。")
-            self.username, self.password  = UserInputHandler.get_user_credentials()
-            with open("user_data.json", "w") as f:
-                json.dump({"username": self.username, "password": self.password}, f)
+        self.username, self.password = Uhandler.get_user_credentials()
 
     def get_sTicket(self,_content="service=https://service.sdu.edu.cn/tp_up/view?m=up"):
         '''
         params: base_url(str), username(str), password (str)
         return: sTicket (str)
         '''
-        ticket = Authenticator.get_TGT(self.username, self.password)
+        ticket = self.get_TGT(self.username, self.password)
         try:
             # 发送第二个请求，获取sTicket
             sTicket = httpx.post(

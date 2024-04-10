@@ -18,6 +18,23 @@ class Profile:
         return f"username: {self.username}\nnickname: {self.nickname}\nemail: {self.email}\nphone: {self.phone}\ngender: {self.gender}\nstudentId: {self.studentId}\nroles: {self.roles}\nsduId: {self.sduId}\ngroups: {self.groups}\nipv4: {self.ipv4}\nuserAgent: {self.userAgent}"
 
 class Group:
+    """
+    "groupId": "57",
+    "gmtCreate": "1708911201000",
+    "openness": 2,
+    "title": "2024 程序设计思维与实践",
+    "memberNum": 322,
+    "description": "",
+    "userId": "767",
+    "status": 2,
+    "owner": {
+        "userId": "767",
+        "username": "SDUProgramming",
+        "nickname": "程序设计思维与实践",
+        "email": "programming@sduoj.online",
+        "status": null
+    }
+    """
     def __init__(self,row):
         self.groupId = row['groupId']
         self.gmtCreate = row['gmtCreate']
@@ -28,6 +45,9 @@ class Group:
         self.userId = row['userId']
         self.status = row['status']
         self.owner = row['owner']
+    
+    def __str__(self):
+        return f"groupId: {self.groupId} title: {self.title}\n"
 
 
 class ProblemSet:

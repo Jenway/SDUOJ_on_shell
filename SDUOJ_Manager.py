@@ -1,137 +1,137 @@
+from email import header
 import json
 import os
-from urllib import response
 from Authenticator import Authenticator
 import httpx
+from utils.FileHandler import debugprint
 
 class SDUOJ_Manager:
     def __init__(self):
         self.auth = Authenticator()
-        self.base_url = "https://oj.qd.sdu.edu.cn/"
-        self.cookie_file = "sduoj_cookie.json"
+        self.sduoj_cookie = self.login_to_sduoj()
 
-    @staticmethod
-    def request_get(url, cookies, params={}, verify=False):
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-            "Referer": "https://oj.qd.sdu.edu.cn/"
-        }
-        return httpx.get(url, headers=headers, params=params, cookies=cookies, verify=verify)
+    base_url = "https://oj.qd.sdu.edu.cn/"
+    cookie_file = "sduoj_cookie.json"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        "Referer": ""
+    }
 
-    @staticmethod
-    def request_post(url, cookies, json, verify=False):
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-            "Referer": "https://oj.qd.sdu.edu.cn/"
-        }
-        return httpx.post(url, headers=headers, json=json, cookies=cookies, verify=verify)
+    def request_get(self, url, params={}, verify=False):
+        return httpx.get(
+            f"{self.base_url}{url}",
+            headers=self.headers,
+            params=params,
+            cookies={"SESSION": self.sduoj_cookie},
+            verify=verify
+        )
+    def request_post(self, url, json, verify=False):
+        return httpx.post(
+            f"{self.base_url}{url}",
+            headers=self.headers,
+            json=json,
+            cookies={"SESSION": self.sduoj_cookie},
+            verify=verify
+        )
 
+    def login_to_sduoj(self) -> str:
+        def load_cookie_from_file():
+            if self.cookie_file in os.listdir():
+                with open(self.cookie_file, "r") as f:
+                    return json.load(f)["cookie"]
+            return None
 
-    def get_cookie(self):
+        def save_cookie_to_file(cookie):
+            with open(self.cookie_file, "w") as f:
+                json.dump({"cookie": cookie}, f)
+
+        def getAndSaveCookie():
+            cookie = self.get_cookie()
+            save_cookie_to_file(cookie)
+            return cookie
+
+        exist_cookie = load_cookie_from_file()
+        if exist_cookie and not SDUOJ_Manager.if_cookie_expired(exist_cookie):
+            return exist_cookie
+        else:
+            return getAndSaveCookie()
+
+    def get_cookie(self)->str:
         service = f"{self.base_url}v2/thirdPartyLogin?thirdParty=SDUCAS"
         sTicket = self.auth.get_sTicket(_content=f"service={service}")
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-            "Referer": self.base_url
-        }
         params = {"thirdParty": "SDUCAS", "ticket": sTicket}
-        response = httpx.get(f"{self.base_url}api/user/thirdPartyLogin", headers=headers, params=params, verify=False)
+
+        try:
+            response = httpx.get(f"{self.base_url}api/user/thirdPartyLogin", headers=self.headers, params=params, verify=False)
+        except Exception as e:
+            print("Error in getting cookie: ", e)
+            exit(1)
+        finally:
+            if response.status_code != 200 or "Set-Cookie" not in response.headers:
+                print(f"Error in getting cookie: {response.status_code}")
+                exit(1)
         return response.headers["Set-Cookie"].split("=")[1].split(";")[0]
 
-    def if_cookie_expired(self, cookie):
+    @staticmethod
+    def if_cookie_expired(cookie):
         """
         Check if the cookie has expired
         """
-        response = self.request_get(
-            "https://oj.qd.sdu.edu.cn/api/user/getProfile",
+        response = httpx.get(
+            f"{SDUOJ_Manager.base_url}api/user/getProfile",
+            headers=SDUOJ_Manager.headers,
             cookies={"SESSION": cookie},
             verify=False
         )
         if response.status_code == 401:
             print("Cookie has expired.")
             return True
+        if response.status_code != 200:
+            print(f"Error in checking cookie: {response.status_code}")
+            return True
         # print data-username and nickname
         print(f"Hello, {response.json()['data']['nickname']}! Your username is {response.json()['data']['username']}.")
         return False
 
-    def load_cookie_from_file(self):
-        if self.cookie_file in os.listdir():
-            with open(self.cookie_file, "r") as f:
-                return json.load(f)["cookie"]
-        return None
 
-    def save_cookie_to_file(self, cookie):
-        with open(self.cookie_file, "w") as f:
-            json.dump({"cookie": cookie}, f)
-
-    def login_to_sduoj(self):
-        existing_cookie = self.load_cookie_from_file()
-        if existing_cookie and not self.if_cookie_expired(existing_cookie):
-            self.sduoj_cookie = existing_cookie
-        else:
-            self.sduoj_cookie = self.get_cookie()
-            self.save_cookie_to_file(self.sduoj_cookie)
-    
     def getProfile(self):
         response = self.request_get(
-            "https://oj.qd.sdu.edu.cn/api/user/getProfile",
-            cookies={"SESSION": self.sduoj_cookie},
-            verify=False
+            "api/user/getProfile",
         )
         return response.json()
     
     def getGroupList(self):
-        # https://oj.qd.sdu.edu.cn/api/group/page?pageNow=1&pageSize=12&isParticipating=1
         response = self.request_get(
-            "https://oj.qd.sdu.edu.cn/api/group/page",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/group/page",
             params={"pageNow": 1, "pageSize": 12, "isParticipating": 1},
-            verify=False
         )
         return response.json()
 
-    # 	https://oj.qd.sdu.edu.cn/api/ps/problem_set/key
-    def getProblemSet(self, groupId):
-        # json {"groupId": "57"}
+    def getProblemSetLabel(self, groupId):
         response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/ps/problem_set/key",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/ps/problem_set/key",
             json={"groupId": groupId},
-            verify=False
-        )
-        return response.json()
-
-
-    # /api/ps/problem_set/search
-    def searchProblemSet(self, groupId, tag, pageNow=1, pageSize=20):
-        # json {"pageNow":1,"pageSize":20,"groupId":"57","tag":"CSPT3模测"}
-        response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/ps/problem_set/search",
-            cookies={"SESSION": self.sduoj_cookie},
-            json={"pageNow": pageNow, "pageSize": pageSize, "groupId": groupId, "tag": tag},
-            verify=False
         )
         return response.json()
     
-    # /api/ps/problem_set/info_c
+    def searchProblemSet(self, groupId, label, pageNow=1, pageSize=20):
+        response = self.request_post(
+            "api/ps/problem_set/search",
+            json={"pageNow": pageNow, "pageSize": pageSize, "groupId": groupId, "tag": label},
+        )
+        return response.json()
+    
     def getProblemSetInfo(self, problemSetId):
-        # json {"psid":59}
         response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/ps/problem_set/info_c",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/ps/problem_set/info_c",
             json={"psid": problemSetId},
-            verify=False
         )
         return response.json()
     
-    # https://oj.qd.sdu.edu.cn/api/ps/problem_set/pro_info
-    def getProblemSetProInfo(self, problemSetId, gid, pid):
-        # json {"router":{"psid":"63","gid":"0","pid":"3"}}
+    def getProblemInfo(self, problemSetId, gid, pid):
         response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/ps/problem_set/pro_info",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/ps/problem_set/pro_info",
             json={"router": {"psid": problemSetId, "gid": gid, "pid": pid}},
-            verify=False
         )
         return response.json()
 
@@ -140,72 +140,71 @@ class SDUOJ_Manager:
     def answerProblem(self, problemSetId, gid, pid, code, judgeTemplateId):
         # json {"data":{"judgeTemplateId":"13","code":"print(5)","problemSetId":"71"},"router":{"psid":"71","gid":"0","pid":"0"}}
         response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/ps/answer_sheet/answer",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/ps/answer_sheet/answer",
             json={"data": {"judgeTemplateId": judgeTemplateId, "code": code, "problemSetId": problemSetId}, "router": {"psid": problemSetId, "gid": gid, "pid": pid}},
-            verify=False
+
         )
         return response.json()
-    # https://oj.qd.sdu.edu.cn/api/ps/answer_sheet/submissionInfo
+    
+    # /api/ps/answer_sheet/answer
+    def answerProblemMD(self, problemSetId, gid, pid, code):
+        # {"data":[],"router":{"psid":"71","gid":"1","pid":"3"}}
+        response = self.request_post(
+            "api/ps/answer_sheet/answer",
+            json={"data": [code], "router": {"psid": problemSetId, "gid": gid, "pid": pid}},
+        )
+        return response.json()
+
+
+    # api/ps/answer_sheet/submissionInfo
     # {psid: "71", gid: "0", pid: "1", submissionId: "7d71c5057403c8a"}
 
     def getSubmissionInfo(self, problemSetId, gid, pid, submissionId):
         response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/ps/answer_sheet/submissionInfo",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/ps/answer_sheet/submissionInfo",
             json={"psid": problemSetId, "gid": gid, "pid": pid, "submissionId": submissionId},
-            verify=False
+
         )
         return response.json()["data"]["judgeScore"]
     
-    # 	https://oj.qd.sdu.edu.cn/api/contest/list?pageNow=1&pageSize=15&groupId=30
+    # 	api/contest/list?pageNow=1&pageSize=15&groupId=30
     def searchContest(self, groupId, pageNow=1, pageSize=15):
         # json {"pageNow":1,"pageSize":15,"groupId":"30"}
         response = self.request_get(
-            "https://oj.qd.sdu.edu.cn/api/contest/list",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/contest/list",
             params={"pageNow": pageNow, "pageSize": pageSize, "groupId": groupId},
-            verify=False
         )
         return response.json()
     
     def getContestList(self, contestId):
-        # https://oj.qd.sdu.edu.cn/api/contest/query?contestId=318
+        # api/contest/query?contestId=318
         response = self.request_get(
-            "https://oj.qd.sdu.edu.cn/api/contest/query",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/contest/query",
             params={"contestId": contestId},
-            verify=False
         )
         return response.json()
     
-    # https://oj.qd.sdu.edu.cn/api/contest/queryProblem?contestId=318&problemCode=1
+    # api/contest/queryProblem?contestId=318&problemCode=1
     def getContestProblem(self, contestId, problemCode):
         response = self.request_get(
-            "https://oj.qd.sdu.edu.cn/api/contest/queryProblem",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/contest/queryProblem",
             params={"contestId": contestId, "problemCode": problemCode},
-            verify=False
         )
         return response.json()
     
-    # https://oj.qd.sdu.edu.cn/api/contest/createSubmission
+    # api/contest/createSubmission
     def createContestSubmission(self, code, problemCode, contestId, judgeTemplateId):
         # {"judgeTemplateId":"6","code":"","problemCode":"1","contestId":"318"}
         response = self.request_post(
-            "https://oj.qd.sdu.edu.cn/api/contest/createSubmission",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/contest/createSubmission",
             json={"judgeTemplateId": judgeTemplateId, "code": code, "problemCode": problemCode, "contestId": contestId},
-            verify=False
         )
         return response.json()
     
-    # https://oj.qd.sdu.edu.cn/api/contest/querySubmission?contestId=318&submissionId=7d96654970032be
+    # api/contest/querySubmission?contestId=318&submissionId=7d96654970032be
     def getContestSubmission(self, contestId, submissionId):
         response = self.request_get(
-            "https://oj.qd.sdu.edu.cn/api/contest/querySubmission",
-            cookies={"SESSION": self.sduoj_cookie},
+            "api/contest/querySubmission",
             params={"contestId": contestId, "submissionId": submissionId},
-            verify=False
         )
         return response.json()
