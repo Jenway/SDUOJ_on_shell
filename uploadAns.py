@@ -16,6 +16,9 @@ def getPSets(psid: str, gid:int = 0):
             print(f"{index} : {p['data']['description']}")
         return
 
+def getProblemSubmissionTemplate(psid: str, gid: int, pid: int):
+    response = oj.getProblemInfo(psid, gid, pid)
+    return response["data"]["judgeTemplates"]
 
 if __name__ == "__main__":
     oj = SDUOJ_Manager()
@@ -34,7 +37,17 @@ if __name__ == "__main__":
     code = input("请输入代码文件: ")
     with open(code, "r", encoding="utf-8") as f:
         code = f.read()
-    if gid == 0:
-        oj.answerProblem(str(psid), 0, idx, code, 6)
+    
+
+
+    if int(gid) == 0:
+        templates = getProblemSubmissionTemplate(psid, int(gid), idx)
+        for t in templates:
+            print("id:", t["id"], "title:", t["title"])
+        print("请选择模板:")
+        template_id = int(input())
+        print("编程题提交中...")
+        oj.answerProblem(str(psid), 0, idx, code, template_id)
     else:
+        print("简答题提交中...")
         oj.answerProblemMD(str(psid), 1, idx, code)

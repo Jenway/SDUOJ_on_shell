@@ -11,9 +11,15 @@
 - [X] 在终端登录 SDUOJ
 - [X] 查看题目列表与题目详情
 - [X] 提交代码
-- [X] 查看提交状态
+- [] 查看提交状态
 
 ## How to Use?
+
+### Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
 
 - main.py : 在终端登录 oj 并查看题目,顺便下载题目的 `.md` 文件
     > 默认查看 `用户组` 里的 `题单`，如果是 `比赛`，调用的是另外几个 api，可以手动修改一下，调用另外的几个函数

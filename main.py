@@ -30,7 +30,17 @@ def dealWithPset(psid: str):
         problem = oj.getProblemInfo(psid, 0, pIdx)
         title = problem["data"]["problemTitle"]
         description = problem["data"]["problemDescriptionDTO"]["markdownDescription"]
-
+        #         "problemCaseDTOList": [
+        #     {
+        #         "input": "5 3\n1\n2\n8\n4\n9",
+        #         "output": "3"
+        #     }
+        # ],
+        if "problemCaseDTOList" in problem["data"]:
+            problemCaseDTOList = problem["data"]["problemCaseDTOList"]
+            for idx, case in enumerate(problemCaseDTOList):
+                description += f"#### 输入\n```\n{case['input']}\n```\n"
+                description += f"#### 输出\n```\n{case['output']}\n```\n"
         judgeTemplates = problem["data"]["judgeTemplates"]
         # for idx, template in enumerate(judgeTemplates):
         #     print(f"{template}")
