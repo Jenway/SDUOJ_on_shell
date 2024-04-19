@@ -1,5 +1,5 @@
 import os
-from utils.FileHandler import read_json_file as read_json, write_json_file as write_json
+from .FileHandler import read_json_file as read_json, write_json_file as write_json
 
 
 def get_loacl_config():

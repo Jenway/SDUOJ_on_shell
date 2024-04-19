@@ -4,6 +4,7 @@ h11==0.14.0
 httpcore==0.18.0
 httpx==0.25.0
 idna==3.4
+pip==23.0.1
 PyInputPlus==0.2.12
 PySimpleValidate==0.2.12
 setuptools==65.5.0
