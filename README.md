@@ -35,7 +35,7 @@ pip install sduoj-0.0.1.tar.gz
     ```bash
     python -m SDUOJ -oju
     ```
-    上传的目标在 `config.json` 中指定，该文件由运行 `main.py` 得到
+    上传的目标在 `config.json` 中指定，该文件由运行 `-ojd` 命令得到
 
 ## How does it work?
 
