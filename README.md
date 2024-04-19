@@ -15,16 +15,27 @@
 
 ## How to Use?
 
-### Install dependencies
+### Install 
+
+Download `sduoj-0.0.1.tar.gz` from [release](https://github.com/Jenway/SDUOJ_on_shell/releases) and run:
 
 ```bash
-pip install -r requirements.txt
+pip install sduoj-0.0.1.tar.gz
 ```
 
-- main.py : 在终端登录 oj 并查看题目,顺便下载题目的 `.md` 文件
-    > 默认查看 `用户组` 里的 `题单`，如果是 `比赛`，调用的是另外几个 api，可以手动修改一下，调用另外的几个函数
-- uploadAns.py : 提交代码，并返回结果 并返回结果(分数)
-    > 上传的目标在 `config.json` 中指定，该文件由运行 `main.py` 得到
+### Run
+
+
+- 在终端登录 oj 并查看题目,顺便下载题目的 `.md` 文件
+    ```bash
+    python -m SDUOJ -ojd
+    ```
+    默认查看 `用户组` 里的 `题单`，如果是 `比赛`，调用的是另外几个 api，如需要可以手动修改一下
+- 提交代码，并返回结果(分数)
+    ```bash
+    python -m SDUOJ -oju
+    ```
+    上传的目标在 `config.json` 中指定，该文件由运行 `main.py` 得到
 
 ## How does it work?
 
