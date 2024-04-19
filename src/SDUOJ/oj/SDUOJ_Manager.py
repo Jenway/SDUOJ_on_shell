@@ -1,9 +1,8 @@
-from email import header
 import json
 import os
-from Authenticator import Authenticator
 import httpx
-from utils.FileHandler import debugprint
+
+from ..utils.Authenticator import Authenticator
 
 class SDUOJ_Manager:
     def __init__(self):

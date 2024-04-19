@@ -1,5 +1,5 @@
 import xml.dom.minidom
-from Authenticator import Authenticator
+from SDUOJ.utils.Authenticator import Authenticator
 import httpx
 
 class Tester:

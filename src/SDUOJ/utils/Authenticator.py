@@ -1,4 +1,4 @@
-from utils.UserInputHandler import Uhandler
+from .UserInputHandler import Uhandler
 import httpx
 
 class AuthenticationError(Exception):
