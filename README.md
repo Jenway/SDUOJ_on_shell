@@ -17,10 +17,8 @@
 
 ### Install 
 
-Download `sduoj-0.0.1.tar.gz` from [release](https://github.com/Jenway/SDUOJ_on_shell/releases) and run:
-
 ```bash
-pip install sduoj-0.0.1.tar.gz
+pip install SDUOJ
 ```
 
 ### Run
