@@ -1,11 +1,10 @@
 import json
-from operator import ge
 from .oj.entity import Group, ProblemSet
 from .utils.FileHandler import create_file, read_json_file
 from .utils.config import get_loacl_config, generate_config
 from .oj.SDUOJ_Manager import SDUOJ_Manager
 
- 
+
 def ojd():
     def getGroups() -> list:
         return [Group(row=group) for group in oj.getGroupList()["data"]["rows"]]
@@ -14,11 +13,12 @@ def ojd():
         return [label for label in oj.getProblemSetLabel(gpId)["data"]["label"]]
 
     def getProblemSet(gpId: str, label: str) -> list:
-        return [ProblemSet(row) for row in oj.searchProblemSet(gpId, label)["data"]["rows"]]
+        return [
+            ProblemSet(row) for row in oj.searchProblemSet(gpId, label)["data"]["rows"]
+        ]
 
     def getProblemSetInfo(psid: str):
         return oj.getProblemSetInfo(psid)
-
 
     def dealWithPset(psid: str):
 
@@ -31,7 +31,9 @@ def ojd():
             pIdx = input("请输入题目编号: ")
             problem = oj.getProblemInfo(psid, 0, pIdx)
             title = problem["data"]["problemTitle"]
-            description = problem["data"]["problemDescriptionDTO"]["markdownDescription"]
+            description = problem["data"]["problemDescriptionDTO"][
+                "markdownDescription"
+            ]
             #         "problemCaseDTOList": [
             #     {
             #         "input": "5 3\n1\n2\n8\n4\n9",
@@ -57,7 +59,6 @@ def ojd():
     def dealWithContest():
         print("懒得写了 = =")
         print("如果你想使用的话，只需要调用 SDUOJ_Manager.py 中的 接口即可 :)")
-
 
     def get_pset():
         PSETLabel = input("请输入label: ")
@@ -97,7 +98,9 @@ def ojd():
                 "groupId": groupId,
                 "PSETorContest": 1,
             }
-        generate_config(groupId=groupId, PSETorContest=0, PSETLabel=psetLabel, psid=psid)
+        generate_config(
+            groupId=groupId, PSETorContest=0, PSETLabel=psetLabel, psid=psid
+        )
         print(f"配置文件已生成，内容为: {config}")
         return config
 
@@ -123,5 +126,6 @@ def ojd():
     config = get_config()
     mainLoop(config)
 
-#if __name__ == "__main__":
+
+# if __name__ == "__main__":
 #    ojd()
